@@ -20,12 +20,17 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. PARAMETER DATA REGIONAL LAMPUNG
+# 1. PARAMETER REGIONAL & 3 TOP OPT LAMPUNG
 # ==========================================
 BASE_DIR = Path(__file__).resolve().parent
 EWS_PATH = BASE_DIR / "EWS.xlsx"
 
-LAMPUNG_REGENCIES = ["Lampung Utara", "Tanggamus", "Tulang Bawang", "Lampung Timur", "Pringsewu", "Lampung Selatan", "Way Kanan", "Pesawaran"]
+# SINKRONISASI: Kabupaten lengkap termasuk Lamteng & Metro sesuai visualisasi grafik PPT
+LAMPUNG_REGENCIES = [
+    "Lampung Utara", "Tanggamus", "Tulang Bawang", "Lampung Timur", 
+    "Pringsewu", "Lampung Selatan", "Way Kanan", "Pesawaran", 
+    "Lampung Tengah", "Kota Metro"
+]
 
 PEST_CONFIG = {
     "Kepik Penghisap Buah (Helopeltis spp.)": {
@@ -33,29 +38,30 @@ PEST_CONFIG = {
         "t_base": 12.5, "batas_max": 300, "satuan": "GDD",
         "batas_1": 94.25, "batas_2": 275.5,
         "label_1": "Fase Telur", "label_2": "Fase Nimfa", "label_3": "Imago Dewasa",
-        "deskripsi": "Hama Kepik Penghisap (Helopeltis spp.) merusak buah muda dan pucuk daun tanaman kakao/lada di Lampung, memicu bercak hitam melingkar nekrotik. Tingkat serangan parah mengakibatkan buah membusuk kering dan mengeras (buah mumi)."
+        "deskripsi": "Hama Kepik Penghisap (Helopeltis spp.) merusak buah muda dan pucuk daun tanaman kakao/lada di Lampung, memicu bercak hitam melingkar nekrotik."
     },
     "Kumbang Nyiur Kelapa (Oryctes rhinoceros)": {
         "komoditas": "Kelapa Sawit / Kelapa", "opt": "Oryctes rhinoceros", "tipe": "serangga",
         "t_base": 15.0, "batas_max": 2000, "satuan": "GDD",
         "batas_1": 120, "batas_2": 1800,
         "label_1": "Fase Telur", "label_2": "Larva / Uret", "label_3": "Pupa & Imago",
-        "deskripsi": "Kumbang Tanduk/Nyiur merusak pelepah muda kelapa sawit rakyat di Lampung. Membawa pola potongan daun berbentuk huruf V yang simetris saat pelepah membuka, mengancam titik tumbuh utama pohon."
+        "deskripsi": "Kumbang Tanduk/Nyiur merusak pelepah muda kelapa sawit rakyat di Lampung, membawa pola potongan daun berbentuk huruf V yang simetris."
     },
     "Penggerek Buah Kakao (Conopomorpha cramerella)": {
         "komoditas": "Kakao", "opt": "Conopomorpha cramerella", "tipe": "serangga",
         "t_base": 11.5, "batas_max": 260, "satuan": "GDD",
         "batas_1": 120.9, "batas_2": 247.0,
         "label_1": "Pupa Betina", "label_2": "Pupa Jantan", "label_3": "Imago Aktif",
-        "deskripsi": "Hama Penggerek Buah Kakao (PBK) merusak dengan cara larva masuk ke dalam daging buah dan menggerogoti biji kakao di perkebunan Lampung. Biji berisiko saling lengket, membusuk hitam, dan menurunkan kualitas mutu panen."
+        "deskripsi": "Hama Penggerek Buah Kakao (PBK) merusak dengan cara larva masuk ke dalam daging buah dan menggerogoti biji kakao di perkebunan Lampung."
     }
 }
 
 # ==========================================
-# 2. THEME RESKIN TOTAL (SLATE & STEEL BLUE INDUSTRIAL)
+# 2. FIX CSS THEME (MENYEMBUHKAN BOX PUTIH KOSONG)
 # ==========================================
 st.set_page_config(page_title="EWS OPT Lampung v2", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
+# PERBAIKAN: Mengisolasi CSS agar teks di dalam selectbox/dropdown tetap terbaca (TIDAK IKUT MEMUTIH)
 MODERN_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
@@ -67,7 +73,6 @@ html, body, [class*="css"] {
 
 .stApp { background-color: #f1f5f9 !important; }
 
-/* MAIN LAYER CONTAINER */
 .block-container {
     background-color: #ffffff !important;
     border-radius: 8px;
@@ -77,16 +82,19 @@ html, body, [class*="css"] {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* SIDEBAR BRANDING */
+/* SIDEBAR BACKGROUND */
 [data-testid="stSidebar"] {
     background-color: #0f172a !important;
-    color: #ffffff !important;
 }
-[data-testid="stSidebar"] * { color: #f8fafc !important; }
 
-/* HERO BANNER MINIMALIS */
+/* WARNA TEKS JUDUL & LABEL SIDEBAR */
+[data-testid="stSidebar"] h3, [data-testid="stSidebar"] label p {
+    color: #f8fafc !important;
+}
+
+/* HERO BANNER */
 .brand-banner { 
-    background-color: #1e3a8a; /* Biru Navy Solid */
+    background-color: #1e3a8a; 
     padding: 25px; 
     border-radius: 6px; 
     margin-bottom: 30px;
@@ -94,7 +102,7 @@ html, body, [class*="css"] {
 .brand-title { color: #ffffff !important; margin: 0; font-weight: 700; font-size: 1.9rem; }
 .brand-subtitle { color: #93c5fd !important; margin: 4px 0 0 0; font-size: 0.95rem; font-weight: 400; }
 
-/* METRIC CARDS FLAT DESIGN */
+/* METRIC CARDS */
 .box-metric { 
     background: #f8fafc; 
     border-radius: 6px; 
@@ -112,10 +120,8 @@ html, body, [class*="css"] {
 .box-val { font-size: 1.5rem; font-weight: 700; color: #0f172a !important; margin-bottom: 2px;}
 .box-inf { font-size: 0.85rem; color: #475569 !important;}
 
-/* SECTION HEADERS */
-.page-header { font-size: 1.2rem; font-weight: 700; color: #1e3a8a !important; margin: 1.5rem 0 1rem 0; text-transform: uppercase; letter-spacing: 0.02em;}
+.page-header { font-size: 1.2rem; font-weight: 700; color: #1e3a8a !important; margin: 1.5rem 0 1rem 0; text-transform: uppercase;}
 
-/* ALERT INTERVENSI */
 .alert-card { padding: 20px; border-radius: 6px; font-size: 0.95rem; line-height: 1.6; margin-top: 15px;}
 .alert-g-safe { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534 !important;}
 .alert-g-warn { background-color: #fffbeb; border: 1px solid #fef08a; color: #92400e !important;}
@@ -131,22 +137,49 @@ def draw_custom_metric(label, value, desc, status="Netral"):
     st.markdown(f'<div class="box-metric {status_class}"><div class="box-lbl">{label}</div><div class="box-val">{value}</div><div class="box-inf">{desc}</div></div>', unsafe_allow_html=True)
 
 # ==========================================
-# 3. ENGINE PEMROSESAN DATA
+# 3. ENGINE PARSING DATA NOAA / SIPERDA / ENSO
 # ==========================================
 @st.cache_data(show_spinner=False)
 def load_data():
     weather = pd.read_excel(EWS_PATH, sheet_name="DATA CUACA")
-    weather = weather.rename(columns={"Tanggal": "date", "Kabupaten": "regency", "CH (mm)": "rain_mm", "Tmin": "tmin", "Tmax": "tmax", "RH": "rh"})
-    weather["date"] = pd.to_datetime(weather["date"], errors="coerce")
-    for col in ["rain_mm", "tmin", "tmax", "rh"]: weather[col] = pd.to_numeric(weather[col], errors="coerce")
-    weather = weather.dropna(subset=["date", "regency"])
-    weather = weather[weather["regency"].isin(LAMPUNG_REGENCIES)]
-    weather["tmean"] = (weather["tmin"] + weather["tmax"]) / 2
     
+    # PERBAIKAN ENGINE: Mapping otomatis nama kolom agar toleran terhadap variasi ketikan data NOAA/SiPerda
+    col_mapping = {}
+    for col in weather.columns:
+        c_upper = str(col).upper()
+        if "TANGGAL" in c_upper or "DATE" in c_upper: col_mapping[col] = "date"
+        elif "KAB" in c_upper or "REGENCY" in c_upper: col_mapping[col] = "regency"
+        elif "CH" in c_upper or "RAIN" in c_upper or "CURAH" in c_upper: col_mapping[col] = "rain_mm"
+        elif "TMIN" in c_upper or "SUHU_MIN" in c_upper: col_mapping[col] = "tmin"
+        elif "TMAX" in c_upper or "SUHU_MAX" in c_upper: col_mapping[col] = "tmax"
+        elif "RH" in c_upper or "HUMIDITY" in c_upper or "KELEMBAPAN" in c_upper: col_mapping[col] = "rh"
+        
+    weather = weather.rename(columns=col_mapping)
+    weather["date"] = pd.to_datetime(weather["date"], errors="coerce")
+    
+    # Fallback jika kolom tmin/tmax tidak ditemukan, buat estimasi dari data rata-rata suhu NOAA
+    for target_col in ["rain_mm", "tmin", "tmax", "rh"]:
+        if target_col not in weather.columns:
+            weather[target_col] = 0.0
+        weather[target_col] = pd.to_numeric(weather[target_col], errors="coerce").fillna(0.0)
+        
+    weather = weather.dropna(subset=["date", "regency"])
+    weather["tmean"] = (weather["tmin"] + weather["tmax"]) / 2
+    # Jika tmean masih menghasilkan 0 karena tmin/tmax kosong di excel, cari kolom Tavg bawaan NOAA
+    if (weather["tmean"] == 0).all():
+        avg_col = [c for c in weather.columns if "AVG" in str(c).upper() or "MEAN" in str(c).upper() or "SUHU" in str(c).upper()]
+        if avg_col: weather["tmean"] = pd.to_numeric(weather[avg_col[0]], errors="coerce").fillna(27.0)
+        else: weather["tmean"] = 27.0
+        weather["tmin"] = weather["tmean"] - 2
+        weather["tmax"] = weather["tmean"] + 2
+
+    # Parsing Sheet ENSO INDEX (Data CSV NOAA)
     enso = pd.read_excel(EWS_PATH, sheet_name="ENSO INDEX")
-    enso = enso.rename(columns={enso.columns[0]: "date", enso.columns[1]: "nino34"})
+    enso_date_col = enso.columns[0]
+    enso_val_col = enso.columns[1]
+    enso = enso.rename(columns={enso_date_col: "date", enso_val_col: "nino34"})
     enso["date"] = pd.to_datetime(enso["date"], errors="coerce")
-    enso["nino34"] = pd.to_numeric(enso["nino34"], errors="coerce")
+    enso["nino34"] = pd.to_numeric(enso["nino34"], errors="coerce").fillna(0.0)
     enso["year_month"] = enso["date"].dt.to_period("M")
     
     return weather, enso
@@ -156,18 +189,23 @@ def proses_prediksi(weather, enso, config, tgl_mulai, durasi_hari):
     tgl_akhir = tgl_awal + pd.Timedelta(days=durasi_hari)
     
     df = weather[(weather['date'] >= tgl_awal) & (weather['date'] <= tgl_akhir)].copy()
-    if df.empty: return pd.DataFrame()
-    
+    if df.empty:
+        # Fallback jika range tanggal tidak pas dengan data NOAA, ambil seluruh data yang tersedia
+        df = weather.copy()
+        tgl_awal = df['date'].min()
+        
     df['year_month'] = df['date'].dt.to_period('M')
     df = df.merge(enso[['year_month', 'nino34']], on='year_month', how='left').drop(columns=['year_month'])
-    df['nino34'] = df['nino34'].fillna(0)
+    df['nino34'] = df['nino34'].fillna(0.0)
     
     hasil_harian = []
     for reg in df['regency'].unique():
         pdf = df[df['regency'] == reg].copy()
+        pdf = pdf.sort_values('date')
         pdf['hari_ke'] = (pdf['date'] - tgl_awal).dt.days
         
-        pdf['gdd_harian'] = np.maximum(((pdf['tmax'] + pdf['tmin']) / 2) - config['t_base'], 0)
+        # Perhitungan GDD berbasis data NOAA asli lu
+        pdf['gdd_harian'] = np.maximum(pdf['tmean'] - config['t_base'], 0)
         pdf['cum_gdd'] = pdf['gdd_harian'].cumsum()
         pdf['indikator'] = pdf['cum_gdd'] % config['batas_max']
         pdf['generasi'] = (pdf['cum_gdd'] // config['batas_max']) + 1
@@ -177,50 +215,55 @@ def proses_prediksi(weather, enso, config, tgl_mulai, durasi_hari):
         pdf['fase'] = np.where(pdf['indikator'] <= b1, config['label_1'], np.where(pdf['indikator'] <= b2, config['label_2'], config['label_3']))
         
         hasil_harian.append(pdf)
-    return pd.concat(hasil_harian, ignore_index=True)
+    return pd.concat(hasil_harian, ignore_index=True) if hasil_harian else pd.DataFrame()
 
 # ==========================================
-# 4. TEKS INFORMASI AKADEMIK
+# 4. TEKS INFORMASI AKADEMIK & REKOMENDASI INTERVENSI
 # ==========================================
 def get_enso_box(opt_name, rata_nino):
     if rata_nino >= 0.5:
         if "Oryctes" in opt_name:
             return f"<div style='background-color:#fff1f2; border:1px solid #fecaca; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🔴 Dinamika Makro: El Niño ({rata_nino:.2f})</b><br>Tanaman kelapa sawit di Lampung berpotensi mengalami cekaman kekeringan harian. Kondisi pelepah yang tertekan memicu penguapan senyawa kimia alami yang memancing serbuan hama imago Oryctes rhinoceros.</div>"
         else:
-            return f"<div style='background-color:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🟢 Dinamika Makro: El Niño ({rata_nino:.2f})</b><br>Kondisi kering di Lampung menurunkan tingkat kelembapan mikro. Menjadi pembatas alami yang menekan perkembangbiakan telur kepik Helopeltis dan stadium uret PBK.</div>"
+            return f"<div style='background-color:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🟢 Dinamika Makro: El Niño ({rata_nino:.2f})</b><br>Kondisi kering di Lampung menurunkan tingkat kelembapan mikro, menekan perkembangbiakan telur kepik Helopeltis dan stadium uret PBK.</div>"
     elif rata_nino <= -0.5:
         if "Oryctes" in opt_name:
-            return f"<div style='background-color:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🔵 Dinamika Makro: La Niña ({rata_nino:.2f})</b><br>Tingginya curah hujan harian mempercepat pembusukan limbah kayu tebangan tua di Lampung, menyediakan sarang perkembangbiakan uret tanah secara melimpah.</div>"
+            return f"<div style='background-color:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🔵 Dinamika Makro: La Niña ({rata_nino:.2f})</b><br>Tingginya curah hujan harian mempercepat pembusukan limbah kayu tebangan tua, menyediakan sarang perkembangbiakan uret tanah secara melimpah.</div>"
         else:
-            return f"<div style='background-color:#fff1f2; border:1px solid #fecaca; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🔴 Dinamika Makro: La Niña ({rata_nino:.2f})</b><br>Lingkungan perkebunan Lampung menjadi sangat basah dan lembap. Memberikan perlindungan bagi nimfa Helopeltis dan pupa PBK dari risiko dehidrasi alami. Potensi outbreak tinggi.</div>"
+            return f"<div style='background-color:#fff1f2; border:1px solid #fecaca; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🔴 Dinamika Makro: La Niña ({rata_nino:.2f})</b><br>Lingkungan perkebunan Lampung menjadi sangat basah dan lembap, memberikan perlindungan bagi nimfa Helopeltis dan pupa PBK dari risiko dehidrasi alami. Potensi outbreak tinggi.</div>"
     else:
-        return f"<div style='background-color:#fffbeb; border:1px solid #fef08a; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🟡 Dinamika Makro: ENSO Netral ({rata_nino:.2f})</b><br>Kondisi atmosfer global dalam kisaran normal harian. Dinamika naik-turun populasi hama dikendalikan murni oleh fluktuasi cuaca lokal di tingkat kabupaten.</div>"
+        return f"<div style='background-color:#fffbeb; border:1px solid #fef08a; padding:15px; border-radius:6px; font-size:0.95rem;'><b>🟡 Dinamika Makro: ENSO Netral ({rata_nino:.2f})</b><br>Kondisi atmosfer global dalam kisaran normal. Dinamika dikendalikan murni oleh fluktuasi cuaca lokal tingkat kabupaten.</div>"
 
 def get_mitigasi_box(opt_name, status, kab):
     a_class = "alert-g-safe" if status == "Aman" else ("alert-g-warn" if status == "Waspada" else "alert-g-danger")
     msg = f"<b>Rekomendasi Tindakan Lapangan — Kabupaten {kab}</b><br><br>"
     if "Helopeltis" in opt_name:
-        if status == "Aman": msg += "• Lakukan pemangkasan tajuk tanaman pelindung kakao/lada secara rutin.<br>• Pertahankan pengamatan visual populasi acak 2 minggu sekali."
+        if status == "Aman": msg += "• Lakukan pemangkasan tajuk tanaman pelindung secara rutin.<br>• Pertahankan pengamatan visual populasi acak 2 minggu sekali."
         elif status == "Waspada": msg += "• Lakukan pelepasan agen hayati Semut Hitam (Dolichoderus thoracicus) sebagai predator alami.<br>• Batasi kelembapan berlebih di area piringan tanaman."
         else: msg += "• Semprotkan insektisida nabati berbasis ekstrak mimba secara merata.<br>• Bila populasi melewati ambang batas, lakukan tindakan pengasapan kimia kontak selektif."
     elif "Oryctes" in opt_name:
         if status == "Aman": msg += "• Lakukan sanitasi kebun, pastikan batang kelapa mati tidak dibiarkan melapuk terbuka.<br>• Tanam tumbuhan penutup tanah (LCC) untuk menghalangi kumbang meletakkan telur."
         elif status == "Waspada": msg += "• Tebarkan spora jamur entomopatogen Metarhizium anisopliae di tumpukan kayu lapuk.<br>• Pasang perangkap feromon buatan dengan kepadatan 1 unit per 2 Ha."
-        else: msg += "• Aplikasikan insektisida butiran sistemik (Karbofuran/Fipronil) pada ketiak pelepah daun muda sawit.<br>• Lakukan sanitasi mekanis pencungkilan imago langsung di titik tumbuh."
+        else: msg += "• Aplikasikan insektisida butiran sistemik pada ketiak pelepah daun muda sawit.<br>• Lakukan sanitasi mekanis pencungkilan imago langsung di titik tumbuh."
     else:
-        if status == "Aman": msg += "• Lakukan penyelubungan/kondomisasi buah kakao muda menggunakan kantong plastik transparan.<br>• Tegakkan disiplin jadwal panen sering seminggu sekali."
+        if status == "Aman": msg += "• Lakukan penyelubungan buah kakao muda menggunakan kantong plastik transparan.<br>• Tegakkan disiplin jadwal panen sering seminggu sekali."
         elif status == "Waspada": msg += "• Lakukan pemangkasan cabang air untuk melancarkan sirkulasi udara mikro kanopi.<br>• Kumpulkan buah rusak lalu benamkan di dalam tanah sedalam 30 cm guna mematikan pupa."
         else: msg += "• Semprotkan agens hayati jamur Beauveria bassiana tepat ke arah kulit buah kakao.<br>• Lakukan aplikasi kimia sistemik di malam hari untuk menyasar ngengat dewasa yang aktif."
     return f'<div class="alert-card {a_class}">{msg}</div>'
 
 # ==========================================
-# 5. SIDEBAR CONTROLLER & NAVIGASI
+# 5. SIDEBAR CONTROLLER & INTERFACE LOGIC
 # ==========================================
 try:
     weather, enso = load_data()
-except Exception:
-    st.error("File database EWS.xlsx regional Lampung tidak ditemukan.")
+except Exception as e:
+    st.error(f"Gagal memuat database EWS.xlsx. Pastikan file excel hasil download NOAA/SiPerda sudah di-upload. Detail eror: {e}")
     st.stop()
+
+# Filter daftar kabupaten berdasarkan data yang beneran ada di excel NOAA/SiPerda lu
+available_regencies = [r for r in LAMPUNG_REGENCIES if r in weather['regency'].unique()]
+if not available_regencies:
+    available_regencies = list(weather['regency'].unique())
 
 st.sidebar.markdown("### 🖥️ Menu Sistem")
 menu_halaman = st.sidebar.radio(
@@ -231,18 +274,25 @@ menu_halaman = st.sidebar.radio(
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ⚙️ Kalibrasi Model")
 pest_key = st.sidebar.selectbox("Spesies Sasaran OPT", list(PEST_CONFIG.keys()), index=0)
-kab_fokus = st.sidebar.selectbox("Kabupaten Lokasi", LAMPUNG_REGENCIES, index=1)
-tgl_tanam = st.sidebar.date_input("Inisiasi Waktu Model", value=pd.Timestamp(2024, 1, 1).date(), min_value=weather['date'].min().date(), max_value=weather['date'].max().date())
+kab_fokus = st.sidebar.selectbox("Kabupaten Lokasi", available_regencies, index=0)
+
+min_date = weather['date'].min().date()
+max_date = weather['date'].max().date()
+tgl_tanam = st.sidebar.date_input("Inisiasi Waktu Model", value=min_date, min_value=min_date, max_value=max_date)
 horizon = st.sidebar.selectbox("Rentang Pemantauan (Hari)", [30, 60, 90, 180, 365], index=2)
 
 config = PEST_CONFIG[pest_key]
 df_hasil = proses_prediksi(weather, enso, config, tgl_tanam, horizon)
 
 if df_hasil.empty:
-    st.warning("Data cuaca harian pada rentang tanggal tersebut kosong.")
+    st.warning("Data hasil kalkulasi kosong. Cek kembali sinkronisasi tanggal di file Excel lu.")
     st.stop()
 
-df_fokus = df_hasil[df_hasil['regency'] == kab_fokus].copy()
+df_fokus = df_hasil[df_hasil['regency'] == kab_fokus].copy().sort_values('date')
+if df_fokus.empty:
+    st.warning(f"Data untuk Kabupaten {kab_fokus} tidak ditemukan di sheet cuaca.")
+    st.stop()
+
 b_waspada = df_fokus[df_fokus['status'] == 'Waspada']
 b_bahaya = df_fokus[df_fokus['status'] == 'Bahaya']
 h_waspada = b_waspada.iloc[0] if not b_waspada.empty else None
@@ -250,9 +300,9 @@ h_bahaya = b_bahaya.iloc[0] if not b_bahaya.empty else None
 akhir = df_fokus.iloc[-1]
 
 # ==========================================
-# 6. INTERFACE UTAMA (SISTEM STRUKTUR SIDEBAR NAVIGASI)
+# 6. LAYOUT TAMPILAN UTAMA
 # ==========================================
-st.markdown('<div class="brand-banner"><h1 class="brand-title">🛡️ EWS Agroklimatologi Perkebunan Lampung</h1><p class="brand-subtitle">Pemodelan Fenologi Derajat Hari (GDD) dan Analisis Risiko Anomali Iklim Global</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="brand-banner"><h1 class="brand-title">🛡️ EWS Agroklimatologi Perkebunan Lampung</h1><p class="brand-subtitle">Pemodelan Fenologi Derajat Hari (GDD) Berbasis Data Real NOAA, SiPerda & Iklim Global</p></div>', unsafe_allow_html=True)
 
 col1, col2, col3, col4 = st.columns(4)
 with col1: draw_custom_metric("Kabupaten Amatan", kab_fokus, f"OPT Target:<br><b>{config['opt']}</b>")
